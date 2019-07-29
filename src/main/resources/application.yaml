@@ -1,11 +1,9 @@
 spring:
   application:
     name: dashlines-news-service
-server:
-  port: 8097
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA_URI:https://dashlines-eureka-cluster.herokuapp.com/}
+      defaultZone: ${EUREKA_URI:https://dashlines-eureka-cluster.herokuapp.com/eureka}
   instance:
     preferIpAddress: true
