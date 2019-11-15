@@ -1,4 +1,4 @@
-package com.dashlines.filter;
+package com.dashlines.web.gateway.filter;
 
 
 import java.io.IOException;

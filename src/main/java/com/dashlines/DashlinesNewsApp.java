@@ -15,14 +15,14 @@ public class DashlinesNewsApp {
 		SpringApplication.run(DashlinesNewsApp.class, args);
 	}
 	
-	 @Bean
-	    public WebMvcConfigurer corsConfigurer() {
-	        return new WebMvcConfigurerAdapter() {
-	            @Override
-	            public void addCorsMappings(CorsRegistry registry) {
-	                registry.addMapping("/greeting-javaconfig").allowedOrigins("*");
-	            }
-	        };
-	    }
+	@Bean
+	public WebMvcConfigurer corsConfigurer() {
+		return new WebMvcConfigurerAdapter() {
+			@Override
+			public void addCorsMappings(CorsRegistry registry) {
+				registry.addMapping("/**").allowedOrigins("*");
+			}
+		};
+	}
 
 }
