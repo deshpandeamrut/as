@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Predicate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -73,7 +76,6 @@ public class NewsServiceImpl {
 	}
 
 	private List<Source> doRestCallForSources(String uri) {
-		System.out.println("Doing rest call for sources... " + uri);
 		RestTemplate restTemplate = new RestTemplate();
 		SourceResponse result = restTemplate.getForObject(uri, SourceResponse.class);
 		return result.getSources();
@@ -86,13 +88,14 @@ public class NewsServiceImpl {
 			RestTemplate restTemplate = new RestTemplate();
 			Response result = restTemplate.getForObject(uri, Response.class);
 			articleList = result.getArticles();
+			Set<String> namesAlreadySeen = new HashSet<>();
+			articleList.removeIf(p -> !namesAlreadySeen.add(p.getTitle()));
 			articleCacheManager.cacheArticleList(key, articleList);
 		}
 		return articleList;
 	}
 
 	public List<Article> getSmartNews(String url) {
-		System.out.println("url:" + url);
 		return doRestCall(url, DashlinesConstants.SMART_NEWS_KEY);
 	}
 
@@ -111,7 +114,6 @@ public class NewsServiceImpl {
 			String sourceId = article.getSourceId();
 			String sourceUrl = article.getUrl();
 			for (String source : sources) {
-				System.out.println(source);
 				if ((sourceName != null && sourceName.toLowerCase().contains(source))
 						|| (sourceId != null && sourceId.toLowerCase().contains(source))
 						|| (sourceUrl != null && sourceUrl.contains(source))) {
@@ -149,16 +151,17 @@ public class NewsServiceImpl {
 
 	public List<Article> getLatestNewsForSearchText(String searchText) {
 		final String uri = "https://newsapi.org/v2/top-headlines?language=en&apiKey=" + newsApiKey + "&q=" + searchText;
-		return doRestCall(uri, "LATEST_NEWS_SEARCH_" + searchText);
+		return doRestCall(uri,  searchText);
 	}
 
 	public List<Article> getAllNewsForSearchText(String searchText) {
 		final String uri = "https://newsapi.org/v2/everything?language=en&apiKey=" + newsApiKey + "&q=" + searchText;
-		return doRestCall(uri, "ALL_NEWS_SEARCH_" + searchText);
+		return doRestCall(uri,  searchText);
 	}
 
 	public List<Article> getNewsForCategory(String category, boolean extendedSearch) {
 		String country = "";
+		category = category.toLowerCase();
 		List<String> indianCategoryList = new ArrayList<>(Arrays.asList("politics", "automobile", "ipl"));
 		if (indianCategoryList.contains(category)) {
 			country = "in";
@@ -168,13 +171,14 @@ public class NewsServiceImpl {
 		List<Article> articles = doRestCall(uri, category);
 		if (articles.isEmpty()) {
 			articles = getLatestNewsForSearchText(category);
+			
 		}
 		if (extendedSearch && articles.isEmpty()) {
 			articles = getAllNewsForSearchText(category);
 		}
 		List<String> sourceList;
-		switch (category) {
-		case "technlogy":
+		switch (category.toLowerCase()) {
+		case "technology":
 			sourceList = technologySourceList;
 			break;
 		case "sports":
